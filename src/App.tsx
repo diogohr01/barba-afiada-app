@@ -12,7 +12,16 @@ import AppointmentDetailPage from "./pages/AppointmentDetailPage";
 import ConfirmationPage from "./pages/ConfirmationPage";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+// Configure o cliente de consulta com retry e cache
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutos
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
