@@ -1,10 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Check, Calendar, Clock, User, AlertCircle } from 'lucide-react';
 import { mockBarbers, mockServices, mockAppointments, apiService } from '../data/mockData';
 import { toast } from "@/hooks/use-toast";
-import { isTimeSlotAvailable, generateAvailableTimeSlots, formatDate, isToday } from '../utils/appointmentUtils';
+import { isTimeSlotAvailable, generateAvailableTimeSlots } from '../utils/appointmentUtils';
+import { formatDateFull, generateDateRange, isPastDate } from '../utils/dateUtils';
+import { api } from '../utils/api';
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const BookingPage = () => {
   const navigate = useNavigate();
@@ -21,27 +23,8 @@ const BookingPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  // Generate dates for the next 14 days
-  const generateDates = () => {
-    const dates = [];
-    const today = new Date();
-    
-    for (let i = 0; i < 14; i++) {
-      const date = new Date();
-      date.setDate(today.getDate() + i);
-      dates.push({
-        full: date.toISOString().split('T')[0],
-        day: date.getDate(),
-        weekday: new Intl.DateTimeFormat('pt-BR', { weekday: 'short' }).format(date),
-        month: new Intl.DateTimeFormat('pt-BR', { month: 'short' }).format(date),
-        isToday: i === 0
-      });
-    }
-    
-    return dates;
-  };
-  
-  const dates = generateDates();
+  // Gerar datas para os próximos 14 dias usando a utilidade
+  const dates = generateDateRange(14);
   
   useEffect(() => {
     // Se houver parametros, pré-selecionar barbeiro e serviço
@@ -98,7 +81,7 @@ const BookingPage = () => {
         setLoading(true);
         try {
           // Em um app real, isso seria uma chamada de API
-          // const times = await apiService.getAvailableTimeSlots(selectedBarber.id, selectedDate);
+          // const times = await api.get(`/barbers/${selectedBarber.id}/available-times?date=${selectedDate}`);
           
           // Usando nossa função utilitária para gerar horários e verificar disponibilidade
           const times = generateAvailableTimeSlots(
@@ -237,6 +220,7 @@ const BookingPage = () => {
       };
       
       // Em um app real, isso seria enviado para o backend
+      // const newAppointment = await api.post('/appointments', appointmentData);
       const newAppointment = await apiService.createAppointment(appointmentData);
       console.log('Appointment created:', newAppointment);
       
@@ -251,7 +235,7 @@ const BookingPage = () => {
       console.error('Erro ao criar agendamento:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível concluir o agendamento. Tente novamente.",
+        description: error.message || "Não foi possível concluir o agendamento. Tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -566,7 +550,7 @@ const BookingPage = () => {
               <div className="flex items-center mb-2">
                 <Calendar size={18} className="mr-2 text-[#9b87f5]" />
                 <span>
-                  {formatDate(selectedDate)}
+                  {formatDateFull(selectedDate)}
                 </span>
               </div>
               <div className="flex items-center">
@@ -607,9 +591,9 @@ const BookingPage = () => {
   };
   
   return (
-    <div className="page-container">
+    <div className="page-container bg-[#1A1F2C] min-h-screen flex flex-col">
       {/* Header */}
-      <header className="bg-[#1A1F2C] px-4 py-6 flex items-center border-b border-[#403E43] sticky top-0 z-10">
+      <header className="bg-[#1A1F2C] px-5 py-6 flex items-center border-b border-[#403E43] sticky top-0 z-10">
         <Link to="/" className="mr-4">
           <ArrowLeft size={24} />
         </Link>
@@ -617,13 +601,13 @@ const BookingPage = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-5 py-6 flex-1">
         {/* Step Progress */}
         <div className="flex items-center justify-between mb-8">
           {[1, 2, 3, 4].map((stepNum) => (
             <div key={stepNum} className="flex items-center">
               <div className={`
-                flex items-center justify-center w-8 h-8 rounded-full
+                flex items-center justify-center w-9 h-9 rounded-full
                 ${step >= stepNum ? 'bg-[#9b87f5]' : 'bg-[#403E43]'} 
                 ${step === stepNum ? 'ring-2 ring-[#9b87f5] ring-offset-2 ring-offset-[#1A1F2C]' : ''}
                 transition-colors
@@ -636,7 +620,7 @@ const BookingPage = () => {
               </div>
               {stepNum < 4 && (
                 <div className={`
-                  h-1 w-12 mx-1
+                  h-1 w-12 md:w-16 mx-1
                   ${step > stepNum ? 'bg-[#9b87f5]' : 'bg-[#403E43]'}
                   transition-colors
                 `}></div>
@@ -647,6 +631,39 @@ const BookingPage = () => {
         
         {renderStepContent()}
       </main>
+
+      {/* Botão de Agendar Fixo */}
+      <div className="fixed bottom-24 right-6 z-10">
+        <Link 
+          to="/booking" 
+          className="flex items-center justify-center w-14 h-14 bg-[#8B5CF6] rounded-full shadow-lg hover:bg-[#7E69AB] transition-colors"
+          aria-label="Agendar"
+        >
+          <Calendar size={22} />
+        </Link>
+      </div>
+
+      {/* Navigation Bar */}
+      <nav className="footer-navigation bg-[#1A1F2C] border-t border-[#403E43] py-4 sticky bottom-0 z-10">
+        <div className="container mx-auto flex justify-around">
+          <Link to="/" className="flex flex-col items-center text-gray-400 hover:text-[#9b87f5] transition-colors">
+            <Calendar size={24} />
+            <span className="text-xs mt-1">Início</span>
+          </Link>
+          <Link to="/booking" className="flex flex-col items-center text-[#9b87f5]">
+            <Calendar size={24} />
+            <span className="text-xs mt-1">Agendar</span>
+          </Link>
+          <Link to="/appointments" className="flex flex-col items-center text-gray-400 hover:text-[#9b87f5] transition-colors">
+            <Clock size={24} />
+            <span className="text-xs mt-1">Histórico</span>
+          </Link>
+          <Link to="/profile" className="flex flex-col items-center text-gray-400 hover:text-[#9b87f5] transition-colors">
+            <User size={24} />
+            <span className="text-xs mt-1">Perfil</span>
+          </Link>
+        </div>
+      </nav>
     </div>
   );
 };

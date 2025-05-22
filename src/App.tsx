@@ -29,16 +29,18 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/booking" element={<BookingPage />} />
-          <Route path="/booking/:barberId" element={<BookingPage />} />
-          <Route path="/appointments" element={<AppointmentsPage />} />
-          <Route path="/appointment/:id" element={<AppointmentDetailPage />} />
-          <Route path="/confirmation/:id" element={<ConfirmationPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <div className="app-container relative min-h-screen">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/booking" element={<BookingPage />} />
+            <Route path="/booking/:barberId" element={<BookingPage />} />
+            <Route path="/appointments" element={<AppointmentsPage />} />
+            <Route path="/appointment/:id" element={<AppointmentDetailPage />} />
+            <Route path="/confirmation/:id" element={<ConfirmationPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
