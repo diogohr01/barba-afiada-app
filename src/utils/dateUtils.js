@@ -1,5 +1,5 @@
 
-import { format, isToday, isTomorrow, isYesterday } from 'date-fns';
+import { format, isToday, isTomorrow, isYesterday, addDays, isBefore } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 /**
@@ -89,4 +89,42 @@ export const getNextDays = (days = 14) => {
   }
   
   return dates;
+};
+
+/**
+ * Check if a date is in the past
+ * @param {string} dateString - Date in ISO format (YYYY-MM-DD)
+ * @returns {boolean} Whether the date is in the past
+ */
+export const isPastDate = (dateString) => {
+  const date = new Date(dateString);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return isBefore(date, today);
+};
+
+/**
+ * Generate a date range for selection
+ * @param {number} days - Number of days in the range
+ * @returns {Array} Array of date objects
+ */
+export const generateDateRange = (days = 14) => {
+  const dateRange = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  for (let i = 0; i < days; i++) {
+    const date = addDays(today, i);
+    const dateISO = format(date, 'yyyy-MM-dd');
+    
+    dateRange.push({
+      full: dateISO,
+      day: format(date, 'd'),
+      weekday: format(date, 'EEE', { locale: ptBR }),
+      month: format(date, 'MMM', { locale: ptBR }),
+      isToday: i === 0
+    });
+  }
+  
+  return dateRange;
 };
