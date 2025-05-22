@@ -1,17 +1,13 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Check, X, Calendar, Clock, User } from 'lucide-react';
-import { toast } from "@/hooks/use-toast";
-import { formatDateFull, formatTime } from '../utils/dateUtils';
-import { apiClient } from '../utils/apiClient';
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Check } from 'lucide-react';
 
 const AppointmentCard = ({ appointment }) => {
   const isPast = new Date(appointment.date) < new Date();
   const statusColors = {
     completed: 'bg-green-500',
-    upcoming: 'bg-[#9b87f5]',
+    upcoming: 'bg-blue-500',
     canceled: 'bg-red-500'
   };
 
@@ -22,94 +18,46 @@ const AppointmentCard = ({ appointment }) => {
     return '';
   };
 
-  const handleCancel = async (e) => {
-    e.preventDefault();
-    // Modal confirmation could be added here
-    if (confirm('Tem certeza que deseja cancelar este agendamento?')) {
-      try {
-        // In a real app, this would be an API call
-        // await apiClient.delete(`/appointments/${appointment.id}`);
-        
-        // Mock API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        toast({
-          title: "Agendamento cancelado",
-          description: "Seu agendamento foi cancelado com sucesso.",
-          variant: "default",
-        });
-      } catch (error) {
-        // The API client now handles error display
-        console.error('Error canceling appointment:', error);
-      }
-    }
-  };
-
   return (
-    <div className="bg-[#403E43] rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow appointment-card animate-fade-in">
-      <div className="p-5">
+    <div className="bg-[#403E43] rounded-lg overflow-hidden shadow-md">
+      <div className="p-4">
         <div className="flex justify-between items-start">
-          <div className="flex-1">
+          <div>
             <div className="flex items-center">
               <h3 className="text-lg font-semibold text-white">{appointment.service}</h3>
-              <span className={`ml-3 px-3 py-1 text-xs rounded-full ${statusColors[appointment.status]} text-white font-medium`}>
+              <span className={`ml-2 px-2 py-1 text-xs rounded-full ${statusColors[appointment.status]} text-white`}>
                 {getStatusLabel()}
               </span>
             </div>
-            
-            <div className="mt-4 space-y-3">
-              <div className="flex items-center text-gray-300">
-                <Calendar size={18} className="mr-3 text-[#9b87f5]" />
-                <span className="text-white">
-                  {formatDateFull(appointment.date)}
-                </span>
-              </div>
-              
-              <div className="flex items-center text-gray-300">
-                <Clock size={18} className="mr-3 text-[#9b87f5]" />
-                <span className="text-white">{formatTime(appointment.time)}</span>
-              </div>
-              
-              <div className="flex items-center text-gray-300">
-                <User size={18} className="mr-3 text-[#9b87f5]" />
-                <span className="text-white font-medium">{appointment.barberName}</span>
-              </div>
-              
-              <p className="flex items-center">
-                <span className="text-gray-300 mr-2">Valor:</span>
-                <span className="text-white font-medium">R$ {appointment.price.toFixed(2)}</span>
-              </p>
-            </div>
+            <p className="text-gray-300 mt-1">
+              {new Date(appointment.date).toLocaleDateString()} às {appointment.time}
+            </p>
+            <p className="text-white mt-1">
+              <span className="text-gray-300">Barbeiro: </span>
+              {appointment.barberName}
+            </p>
+            <p className="text-white mt-1">
+              <span className="text-gray-300">Valor: </span>
+              R$ {appointment.price.toFixed(2)}
+            </p>
           </div>
-          
           {appointment.status === 'completed' && (
             <div className="bg-green-500 p-2 rounded-full">
-              <Check size={18} />
+              <Check size={16} />
             </div>
           )}
         </div>
-        
-        {appointment.notes && (
-          <Alert className="mt-4 bg-[#32303A] border-[#6E59A5]">
-            <AlertTitle>Observações:</AlertTitle>
-            <AlertDescription>{appointment.notes}</AlertDescription>
-          </Alert>
-        )}
-        
-        <div className="mt-5 flex justify-end space-x-3">
+        <div className="mt-4 flex justify-end">
           <Link 
             to={`/appointment/${appointment.id}`}
             className="py-2 px-4 text-sm bg-transparent border border-[#9b87f5] text-[#9b87f5] rounded-lg hover:bg-[#9b87f5] hover:bg-opacity-10 transition-colors"
           >
             Ver Detalhes
           </Link>
-          
           {!isPast && appointment.status === 'upcoming' && (
             <button 
-              onClick={handleCancel}
-              className="py-2 px-4 text-sm bg-transparent border border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:bg-opacity-10 transition-colors flex items-center"
+              className="ml-2 py-2 px-4 text-sm bg-transparent border border-red-500 text-red-500 rounded-lg hover:bg-red-500 hover:bg-opacity-10 transition-colors"
             >
-              <X size={16} className="mr-2" />
               Cancelar
             </button>
           )}
