@@ -1,11 +1,14 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Star } from 'lucide-react';
+import { Calendar, Star, Clock } from 'lucide-react';
+import { APP_CONFIG } from '../config/appConfig';
 
 const BarberCard = ({ barber }) => {
+  const themeColors = APP_CONFIG.THEME;
+  
   return (
-    <div className="bg-[#403E43] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow barber-card animate-fade-in">
+    <div className="bg-[var(--card_background)] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow barber-card animate-fade-in">
       <div className="relative">
         <img 
           src={barber.image} 
@@ -38,14 +41,14 @@ const BarberCard = ({ barber }) => {
         
         {barber.nextAvailable && (
           <p className="text-gray-300 mt-3 text-sm flex items-center">
-            <Clock size={14} className="mr-2 text-[#9b87f5]" />
+            <Clock size={14} className={`mr-2 text-[${themeColors.PRIMARY}]`} />
             Próximo horário: <span className="text-white ml-1">{barber.nextAvailable}</span>
           </p>
         )}
         
         <Link 
           to={`/booking/${barber.id}`}
-          className="mt-4 flex items-center justify-center w-full py-3 px-4 bg-[#9b87f5] text-white rounded-lg hover:bg-[#8B5CF6] transition-colors"
+          className={`mt-4 flex items-center justify-center w-full py-3 px-4 bg-[${themeColors.PRIMARY}] text-white rounded-lg hover:bg-[${themeColors.PRIMARY_HOVER}] transition-colors`}
         >
           <Calendar size={16} className="mr-2" />
           Agendar

@@ -1,77 +1,66 @@
 
-/**
- * Utilitários para formatação e manipulação de datas
- */
+import { format, isToday, isTomorrow, isYesterday } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 /**
- * Formata uma data para exibição com nome do dia da semana, dia e mês
- * @param {string|Date} date - Data a ser formatada
- * @param {string} locale - Localização para formatação (padrão: pt-BR)
- * @returns {string} - Data formatada
+ * Format a date in a user-friendly way
+ * @param {string} dateString - Date in ISO format (YYYY-MM-DD)
+ * @returns {string} Formatted date
  */
-export const formatDateFull = (date, locale = 'pt-BR') => {
-  const dateObj = date instanceof Date ? date : new Date(date);
+export const formatFriendlyDate = (dateString) => {
+  const date = new Date(dateString);
   
-  return new Intl.DateTimeFormat(locale, {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  }).format(dateObj);
-};
-
-/**
- * Formata uma data para exibição curta (dd/mm/yyyy)
- * @param {string|Date} date - Data a ser formatada
- * @param {string} locale - Localização para formatação (padrão: pt-BR)
- * @returns {string} - Data formatada
- */
-export const formatDateShort = (date, locale = 'pt-BR') => {
-  const dateObj = date instanceof Date ? date : new Date(date);
+  if (isToday(date)) {
+    return 'Hoje';
+  } else if (isTomorrow(date)) {
+    return 'Amanhã';
+  } else if (isYesterday(date)) {
+    return 'Ontem';
+  }
   
-  return new Intl.DateTimeFormat(locale, {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  }).format(dateObj);
+  // Format as "Segunda-feira, 12 de maio"
+  return format(date, "EEEE, d 'de' MMMM", { locale: ptBR });
 };
 
 /**
- * Retorna um objeto com partes da data para exibição em calendário
- * @param {string|Date} date - Data a ser formatada
- * @param {string} locale - Localização para formatação (padrão: pt-BR)
- * @returns {Object} - Objeto com partes da data (dia, diaSemana, mes)
+ * Format date for display in full format
+ * @param {string} dateString - Date in ISO format (YYYY-MM-DD)
+ * @returns {string} Formatted date
  */
-export const getDateParts = (date, locale = 'pt-BR') => {
-  const dateObj = date instanceof Date ? date : new Date(date);
+export const formatDateFull = (dateString) => {
+  const date = new Date(dateString);
+  return format(date, "d 'de' MMMM 'de' yyyy", { locale: ptBR });
+};
+
+/**
+ * Format time (HH:MM) with AM/PM
+ * @param {string} timeString - Time in HH:MM format
+ * @returns {string} Formatted time
+ */
+export const formatTime = (timeString) => {
+  const [hours, minutes] = timeString.split(':').map(Number);
+  const date = new Date();
+  date.setHours(hours);
+  date.setMinutes(minutes);
   
-  return {
-    day: dateObj.getDate(),
-    weekday: new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(dateObj),
-    month: new Intl.DateTimeFormat(locale, { month: 'short' }).format(dateObj),
-    isToday: isSameDay(dateObj, new Date())
-  };
+  return format(date, 'HH:mm', { locale: ptBR });
 };
 
 /**
- * Verifica se duas datas representam o mesmo dia
- * @param {Date} date1 - Primeira data
- * @param {Date} date2 - Segunda data
- * @returns {boolean} - true se forem o mesmo dia
+ * Get current date in YYYY-MM-DD format
+ * @returns {string} Current date
  */
-export const isSameDay = (date1, date2) => {
-  return date1.getDate() === date2.getDate() &&
-         date1.getMonth() === date2.getMonth() &&
-         date1.getFullYear() === date2.getFullYear();
+export const getCurrentDate = () => {
+  const today = new Date();
+  return format(today, 'yyyy-MM-dd');
 };
 
 /**
- * Gera um array de datas para os próximos N dias
- * @param {number} days - Número de dias a gerar
- * @param {string} locale - Localização para formatação (padrão: pt-BR)
- * @returns {Array} - Array de objetos de data
+ * Generate array of dates for the next n days
+ * @param {number} days - Number of days
+ * @returns {Array} Array of date objects with ISO string and formatted display
  */
-export const generateDateRange = (days = 14, locale = 'pt-BR') => {
+export const getNextDays = (days = 14) => {
   const dates = [];
   const today = new Date();
   
@@ -79,36 +68,25 @@ export const generateDateRange = (days = 14, locale = 'pt-BR') => {
     const date = new Date();
     date.setDate(today.getDate() + i);
     
+    const dateISO = format(date, 'yyyy-MM-dd');
+    let dateDisplay;
+    
+    if (i === 0) {
+      dateDisplay = 'Hoje';
+    } else if (i === 1) {
+      dateDisplay = 'Amanhã';
+    } else {
+      // Format as day of week + day number (e.g., "Seg 12")
+      dateDisplay = format(date, 'E d', { locale: ptBR });
+    }
+    
     dates.push({
-      full: date.toISOString().split('T')[0],
-      day: date.getDate(),
-      weekday: new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date),
-      month: new Intl.DateTimeFormat(locale, { month: 'short' }).format(date),
-      isToday: i === 0
+      date: dateISO,
+      display: dateDisplay,
+      isToday: i === 0,
+      fullDisplay: formatFriendlyDate(dateISO)
     });
   }
   
   return dates;
-};
-
-/**
- * Formata um horário para exibição (HH:MM)
- * @param {string} time - Horário no formato HH:MM
- * @returns {string} - Horário formatado
- */
-export const formatTime = (time) => {
-  // Adicione lógica personalizada de formatação de hora se necessário
-  return time;
-};
-
-/**
- * Verifica se uma data já passou
- * @param {string|Date} date - Data a ser verificada
- * @returns {boolean} - true se a data está no passado
- */
-export const isPastDate = (date) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const checkDate = new Date(date);
-  return checkDate < today;
 };

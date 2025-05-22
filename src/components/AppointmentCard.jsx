@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Check, X, Calendar, Clock, User } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
 import { formatDateFull, formatTime } from '../utils/dateUtils';
-import { api } from '../utils/api';
+import { apiClient } from '../utils/apiClient';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 const AppointmentCard = ({ appointment }) => {
@@ -27,10 +27,10 @@ const AppointmentCard = ({ appointment }) => {
     // Modal confirmation could be added here
     if (confirm('Tem certeza que deseja cancelar este agendamento?')) {
       try {
-        // Em um app real, isto seria uma API call
-        // await api.put(`/appointments/${appointment.id}/cancel`);
+        // In a real app, this would be an API call
+        // await apiClient.delete(`/appointments/${appointment.id}`);
         
-        // Mock da resposta de sucesso
+        // Mock API call
         await new Promise(resolve => setTimeout(resolve, 500));
         
         toast({
@@ -39,12 +39,8 @@ const AppointmentCard = ({ appointment }) => {
           variant: "default",
         });
       } catch (error) {
+        // The API client now handles error display
         console.error('Error canceling appointment:', error);
-        toast({
-          title: "Erro",
-          description: error.message || "Não foi possível cancelar o agendamento.",
-          variant: "destructive",
-        });
       }
     }
   };

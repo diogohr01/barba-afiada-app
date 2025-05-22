@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Calendar } from 'lucide-react';
 import AppointmentCard from '../components/AppointmentCard';
 import { mockAppointments } from '../data/mockData';
+import { formatFriendlyDate } from '../utils/dateUtils';
 
 const AppointmentsPage = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
@@ -64,6 +65,15 @@ const AppointmentsPage = () => {
           </button>
         </div>
         
+        {/* Display date heading for upcoming appointments */}
+        {activeTab === 'upcoming' && appointments.upcoming.length > 0 && (
+          <div className="mb-4">
+            <h2 className="text-lg font-medium text-gray-300">
+              {appointments.upcoming.length} {appointments.upcoming.length === 1 ? 'agendamento' : 'agendamentos'} próximo{appointments.upcoming.length !== 1 && 's'}
+            </h2>
+          </div>
+        )}
+        
         {/* Appointments List */}
         <div className="space-y-4">
           {activeTab === 'upcoming' && appointments.upcoming.length === 0 && (
@@ -84,9 +94,29 @@ const AppointmentsPage = () => {
             </div>
           )}
           
-          {activeTab === 'upcoming' && appointments.upcoming.map(appointment => (
-            <AppointmentCard key={appointment.id} appointment={appointment} />
-          ))}
+          {/* Group appointments by date for better organization */}
+          {activeTab === 'upcoming' && appointments.upcoming.length > 0 && (
+            <>
+              {/* Group appointments by date and display them */}
+              {Object.entries(
+                appointments.upcoming.reduce((acc, appointment) => {
+                  const date = appointment.date;
+                  if (!acc[date]) acc[date] = [];
+                  acc[date].push(appointment);
+                  return acc;
+                }, {})
+              ).map(([date, dateAppointments]) => (
+                <div key={date} className="mb-8">
+                  <h3 className="text-md font-medium text-[#9b87f5] mb-3">{formatFriendlyDate(date)}</h3>
+                  <div className="space-y-4">
+                    {dateAppointments.map(appointment => (
+                      <AppointmentCard key={appointment.id} appointment={appointment} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
           
           {activeTab === 'past' && appointments.past.map(appointment => (
             <AppointmentCard key={appointment.id} appointment={appointment} />
